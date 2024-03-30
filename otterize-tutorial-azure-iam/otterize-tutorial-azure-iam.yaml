@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: otterize-tutorial-azure-iam
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: client
+  namespace: otterize-tutorial-azure-iam
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  namespace: otterize-tutorial-azure-iam
+spec:
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+        # Required by the Azure workload identity operator, only the pods with this label can use workload identity
+        azure.workload.identity/use: "true"
+        credentials-operator.otterize.com/create-azure-workload-identity: "true"
+
+    spec:
+      serviceAccountName: client
+      containers:
+        - name: client
+          image: mcr.microsoft.com/azure-cli
+          command: [ "/bin/sh", "-c", "--" ]
+          args:
+            - while true;
+              do
+                echo;
+                echo 'Client - The time is:' $(date);
+                echo;
+                if [[ -z "$AZURE_CLIENT_ID" ]]; then echo "Azure client ID not set";
+                else
+                  echo 'Logging in using federated identity credentials';
+                  az login -o table --federated-token $(cat $AZURE_FEDERATED_TOKEN_FILE) --service-principal -u $AZURE_CLIENT_ID -t $AZURE_TENANT_ID;
+                  echo;
+                  echo 'Client - The time is:' $(date);
+                  echo;
+                  echo 'Listing secrets in key vault kv-excelsior-ex-713 (replace with your keyvault name)';
+                  az keyvault secret list --vault-name kv-excelsior-ex-713 -o table;
+                  echo;
+                  echo;
+                fi;
+                sleep 5;
+              done

@@ -1,0 +1,14 @@
+apiVersion: k8s.otterize.com/v1alpha3
+kind: ClientIntents
+metadata:
+  name: client-intents-for-otterize-network-mapper
+  namespace: otterize-system
+spec:
+  service:
+    name: otterize-network-mapper
+  calls:
+    - name: "svc:kubernetes.default"
+    - type: internet
+      internet:
+        domains:
+          - app.otterize.com

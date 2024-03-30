@@ -1,0 +1,14 @@
+apiVersion: k8s.otterize.com/v1alpha3
+kind: ClientIntents
+metadata:
+  name: client
+  namespace: otterize-tutorial-azure-iam
+spec:
+  service:
+    name: client
+  calls:
+    - name: "/providers/Microsoft.KeyVault/vaults/kv-excelsior-ex-713"
+      type: azure
+      # Optional - Grant Azure Key Vault data plane access by using Key Vault access policy
+      azureRoles:
+        - "Key Vault Secrets Officer"
